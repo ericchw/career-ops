@@ -159,6 +159,7 @@ data/model-blacklist.json
 .DS_Store
 *.mov
 *.mp4
+*.avi
 
 # IDE-specific local config
 .idea/
