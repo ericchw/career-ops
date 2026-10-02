@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="{{LANG}}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{NAME}} — CV</title>
+<style>
+  :root {
+    --ink: #14263d;
+    --accent-color: #2563eb;
+    --secondary-color: #334155;
+    --muted: #58677a;
+    --line: #d8e0ea;
+    --soft-blue: #eff5ff;
+    --font-family: "Liberation Sans", "Helvetica Neue", Arial, "DejaVu Sans", sans-serif;
+    --font-size: 11px;
+    --page-margin: 0.55in;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-variant-ligatures: none;
+    font-feature-settings: "liga" 0, "clig" 0, "dlig" 0;
+  }
+
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  @page { margin: var(--page-margin); }
+
+  body {
+    background: #fff;
+    color: var(--ink);
+    font-family: var(--font-family);
+    font-size: var(--font-size);
+    line-height: 1.5;
+    font-variant-ligatures: none;
+    font-feature-settings: "liga" 0, "clig" 0, "dlig" 0;
+  }
+
+  .page {
+    width: 100%;
+    max-width: {{PAGE_WIDTH}};
+    margin: 0 auto;
+  }
+
+  .cv-photo {
+    float: right;
+    width: 76px;
+    height: 92px;
+    object-fit: cover;
+    margin: 0 0 10px 16px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+  }
+  .cv-photo--rounded { border-radius: 8px; }
+  .cv-photo--circle { width: 76px; height: 76px; border-radius: 50%; }
+  .cv-photo--square { width: 76px; height: 76px; border-radius: 0; }
+
+  .header {
+    border-top: 5px solid var(--accent-color);
+    border-bottom: 1px solid var(--line);
+    padding: 13px 0 12px;
+    margin-bottom: 17px;
+  }
+
+  .role-line {
+    color: var(--accent-color);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    line-height: 1.35;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+
+  .header h1 {
+    color: var(--ink);
+    font-size: 27px;
+    font-weight: 700;
+    letter-spacing: -0.035em;
+    line-height: 1.15;
+    margin-bottom: 8px;
+  }
+
+  .contact-row {
+    align-items: center;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 9.5px;
+    gap: 3px 9px;
+    line-height: 1.45;
+  }
+
+  .contact-row a {
+    color: var(--muted);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+
+  .contact-row .separator { color: #9aa8b8; }
+
+  .section { margin-bottom: 14px; }
+
+  .section-title {
+    border-bottom: 1px solid var(--line);
+    color: var(--accent-color);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    line-height: 1.25;
+    margin-bottom: 7px;
+    padding-bottom: 4px;
+    text-transform: uppercase;
+  }
+
+  .summary-text {
+    color: #334155;
+    font-size: 10.5px;
+    line-height: 1.55;
+  }
+
+  .competencies-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .competency-tag {
+    background: var(--soft-blue);
+    border: 1px solid #d9e6ff;
+    border-radius: 3px;
+    color: #244c91;
+    font-size: 9px;
+    font-weight: 600;
+    line-height: 1.25;
+    padding: 3px 7px;
+  }
+
+  .job { margin-bottom: 11px; break-inside: avoid; page-break-inside: avoid; }
+
+  .job-header, .edu-header {
+    align-items: baseline;
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+  }
+
+  .job-company {
+    color: var(--ink);
+    font-size: 11.5px;
+    font-weight: 700;
+  }
+
+  .job-period, .edu-year {
+    color: var(--muted);
+    flex-shrink: 0;
+    font-size: 9.5px;
+    white-space: nowrap;
+  }
+
+  .job-role {
+    color: var(--accent-color);
+    font-size: 10.5px;
+    font-weight: 600;
+    margin: 1px 0 4px;
+  }
+
+  .job-location, .edu-location {
+    color: var(--muted);
+    font-size: 9.5px;
+  }
+
+  .job ul { margin: 4px 0 0; padding-left: 16px; }
+  .job li {
+    color: #334155;
+    font-size: 10px;
+    line-height: 1.45;
+    margin-bottom: 2px;
+    padding-left: 1px;
+  }
+  .job li::marker { color: var(--accent-color); }
+  .job li strong { color: var(--ink); font-weight: 700; }
+
+  .project { margin-bottom: 8px; break-inside: avoid; page-break-inside: avoid; }
+  .project-title { color: var(--ink); font-size: 11px; font-weight: 700; }
+  .project-title a { color: inherit; text-decoration: none; }
+  .project-badge {
+    background: var(--soft-blue);
+    border-radius: 3px;
+    color: #244c91;
+    font-size: 8.5px;
+    margin-left: 5px;
+    padding: 2px 5px;
+  }
+  .project-desc, .project-bullets li {
+    color: #334155;
+    font-size: 10px;
+    line-height: 1.45;
+  }
+  .project-desc { margin-top: 2px; }
+  .project-bullets { margin: 3px 0 0; padding-left: 16px; }
+  .project-bullets li { margin-bottom: 2px; }
+  .project-bullets li::marker { color: var(--accent-color); }
+  .project-tech { color: var(--muted); font-size: 9px; margin-top: 3px; }
+
+  .edu-item { margin-bottom: 6px; break-inside: avoid; page-break-inside: avoid; }
+  .edu-title { color: var(--ink); font-size: 10.5px; font-weight: 700; }
+  .edu-org { color: var(--muted); font-weight: 400; }
+  .edu-desc { color: #334155; font-size: 9.5px; margin-top: 2px; }
+
+  .cert-item, .award-item {
+    align-items: baseline;
+    border-bottom: 1px solid #edf0f4;
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+    margin-bottom: 4px;
+    padding-bottom: 3px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .cert-title, .award-title { color: var(--ink); flex: 1; font-size: 10px; }
+  .cert-org, .award-org { color: var(--muted); font-size: 9px; }
+  .cert-year, .award-year { color: var(--muted); flex-shrink: 0; font-size: 9px; }
+  .cert-additional { color: var(--muted); font-size: 9px; margin-top: 3px; }
+
+  .skills-grid { display: grid; gap: 3px; }
+  .skill-item { color: #334155; font-size: 9.5px; line-height: 1.4; }
+  .skill-category { color: var(--ink); font-weight: 700; }
+  .interests-line { color: #334155; font-size: 10px; }
+
+  a { overflow-wrap: anywhere; }
+
+  @media print {
+    html, body { background: #fff; }
+    .page { max-width: none; }
+    .section-title, .competency-tag, .project-badge {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+  }
+</style>
+</head>
+<body>
+<main class="page">
+  {{PHOTO}}
+
+  <div class="header">
+    <div class="role-line">Software Engineer · Software Developer</div>
+    <h1>{{NAME}}</h1>
+    <div class="contact-row">
+      <a href="tel:{{PHONE}}">{{PHONE}}</a>
+      <span class="separator">|</span>
+      <a href="mailto:{{EMAIL}}">{{EMAIL}}</a>
+      <span class="separator">|</span>
+      <a href="{{LINKEDIN_URL}}">{{LINKEDIN_DISPLAY}}</a>
+      <span class="separator">|</span>
+      <a href="{{PORTFOLIO_URL}}">{{PORTFOLIO_DISPLAY}}</a>
+      <span class="separator">|</span>
+      <span>{{LOCATION}}</span>
+    </div>
+  </div>
+
+  <section class="section">
+    <h2 class="section-title">{{SECTION_SUMMARY}}</h2>
+    <div class="summary-text">{{SUMMARY_TEXT}}</div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">{{SECTION_COMPETENCIES}}</h2>
+    <div class="competencies-grid">{{COMPETENCIES}}</div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">{{SECTION_EXPERIENCE}}</h2>
+    {{EXPERIENCE}}
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">{{SECTION_PROJECTS}}</h2>
+    {{PROJECTS}}
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">{{SECTION_EDUCATION}}</h2>
+    {{EDUCATION}}
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">{{SECTION_CERTIFICATIONS}}</h2>
+    {{CERTIFICATIONS}}
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">{{SECTION_AWARDS}}</h2>
+    {{AWARDS}}
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">{{SECTION_INTERESTS}}</h2>
+    {{INTERESTS}}
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">{{SECTION_SKILLS}}</h2>
+    {{SKILLS}}
+  </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cover Letter — {{NAME}}</title>
+<style>
+  /* Theme matches config/custom-cv-template.html (user layer): Liberation Sans stack,
+     burnt-orange accent. Two blocks: a full-bleed grey top band (name, contact
+     info) with an orange underline, and a plain white letter body below
+     (date, subject line, salutation, body, sign-off, signature) — mirrors the
+     shape of the old serif cover letter template, restyled to match the CV.
+
+     No headline and no certifications here by design — certifications are
+     resume-only; keeping the letter to name + contact info avoids duplicating
+     content the CV already leads with.
+
+     Single font family throughout: every rule inherits body's --font-sans
+     (Liberation Sans, with the same ATS-safe system-sans fallback stack as
+     the CV). Liberation Sans was kept deliberately over the old template's
+     Times New Roman serif so the CV and cover letter read as one document
+     set, and to avoid the ligature-driven ATS text-extraction spacing bug
+     documented in templates/cv-template.html (fi/fl/ffi glyphs decoding back
+     to spaced-out words). Don't introduce a second font family here.
+
+     All sizes/spacing use px (matches config/custom-cv-template.html's own
+     unit convention, not pt) — body text is 12px, the same literal value as
+     the CV's body font-size. */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-variant-ligatures: none;
+    font-feature-settings: "liga" 0, "clig" 0, "dlig" 0;
+  }
+
+  :root {
+    --font-sans: 'Liberation Sans', 'Helvetica Neue', Arial, 'DejaVu Sans', sans-serif;
+    --accent: #D85A30;
+    --accent-dark: #A84324;
+    --accent-light: #FFF0E8;
+    --accent-border: #F0C4AE;
+    --text: #1a1a1a;
+    --text-muted: #666666;
+    --divider: #D8D8D8;
+    --contact-bg: #EBEBEB;
+    /* --text-muted (#666) is tuned for white backgrounds (contrast ~7:1) but
+       drops to ~4.8:1 on --contact-bg, borderline for 10px text. Use this
+       darker value for any text sitting directly on the grey top band. */
+    --text-muted-on-band: #4a4a4a;
+    /* Page margins: top 1.38in, left/right/bottom 1.18in (MS Word-style
+       margins, requested explicitly — not this project's usual 0.6in). The
+       +2px on the right is the same print-clip gutter used elsewhere in this
+       project (see config/custom-cv-template.html header comment) — without
+       it, the right-most glyph's side bearing can get clipped by Chromium's
+       print engine by a pixel or two. */
+    --page-margin-top: 1.38in;
+    --page-margin: 1.18in;
+    --page-margin-right: calc(1.18in + 2px);
+  }
+
+  html {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    line-height: 1.5;
+    color: #1a1a2e;
+    background: #ffffff;
+    font-variant-ligatures: none;
+    font-feature-settings: "liga" 0, "clig" 0, "dlig" 0;
+  }
+
+  /* === TOP BAND (grey, bleeds to the physical top/left/right page-1 edges) ===
+     True horizontal bleed in Chromium's print engine requires the @page
+     margin box itself to have zero left/right inset — negative margins on a
+     child while @page keeps a non-zero margin get CLIPPED at the margin
+     box boundary, they do not paint into it (verified: rendered at 100dpi
+     and sampled pixels at x=0..30 were white, not grey, before this fix).
+     So @page below sets left/right margins to 0 on every page (not just
+     :first), and .page-content re-applies the visual inset via padding
+     instead — this keeps page 2+ (if the letter ever runs long) visually
+     consistent with page 1 without relying on @page margins at all
+     horizontally. Vertical bleed (top, page 1 only) still works via
+     @page :first { margin-top: 0 }, same technique as
+     config/custom-cv-template.html's .contact-panel — that one only needed
+     vertical bleed, so it never hit this left/right clipping issue. */
+  .top-band {
+    background: var(--contact-bg);
+    border-bottom: 4px solid var(--accent);
+    padding: var(--page-margin-top) var(--page-margin-right) 21px var(--page-margin);
+    margin-bottom: 32px;
+  }
+
+  .name {
+    font-family: var(--font-sans);
+    font-size: 26px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    line-height: 1.1;
+    color: var(--text);
+  }
+
+  .contact {
+    font-size: 10px;
+    color: var(--text-muted-on-band);
+    line-height: 1.5;
+    margin-top: 8px;
+  }
+
+  .contact a, .footnotes a {
+    color: var(--accent-dark);
+    text-decoration: none;
+  }
+
+  /* === PAGE CONTENT (white, horizontal inset lives here — not on @page) === */
+  .page-content {
+    padding: 0 var(--page-margin-right) 0 var(--page-margin);
+  }
+
+  .date-line {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-bottom: 13px;
+  }
+
+  .subject-line {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--accent);
+    border-bottom: 1.5px solid var(--divider);
+    padding-bottom: 5px;
+    margin-bottom: 19px;
+  }
+
+  .greeting {
+    margin-bottom: 11px;
+  }
+
+  p {
+    margin-bottom: 11px;
+  }
+
+  .achievements {
+    list-style: none;
+    margin-bottom: 5px;
+  }
+
+  .achievements li {
+    margin-bottom: 8px;
+    padding-left: 19px;
+    position: relative;
+  }
+
+  .achievements li::before {
+    content: "\2022";
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+  }
+
+  .achievements li b {
+    color: var(--text);
+  }
+
+  .language-closing {
+    font-style: italic;
+    margin-top: 5px;
+    margin-bottom: 11px;
+    color: #444;
+  }
+
+  /* Sign-off ("Sincerely," etc.) and optional signature image. Placeholder
+     image location: config/assets/signature.png (see build-cover-letter-html.mjs
+     header comment — same convention as config/assets/logo-linkedin.png for
+     the CV). Absent file -> {{SIGNATURE_IMAGE_BLOCK}} renders empty, degrading
+     cleanly to a typed name only. */
+  .sign-off {
+    margin-top: 21px;
+    margin-bottom: 3px;
+    color: var(--text);
+  }
+
+  .signature-img {
+    display: block;
+    max-height: 56px;
+    max-width: 267px;
+    margin: 8px 0 3px;
+  }
+
+  .signature {
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .footnotes {
+    margin-top: 16px;
+    padding-top: 8px;
+    border-top: 1.5px solid var(--divider);
+  }
+
+  .footnotes p {
+    font-size: 9px;
+    color: #888888;
+    line-height: 1.4;
+    margin-bottom: 4px;
+  }
+
+  @page {
+    margin-top: var(--page-margin-top);
+    margin-right: 0;
+    margin-bottom: var(--page-margin);
+    margin-left: 0;
+  }
+
+  /* Page 1 only: top band bleeds to the physical top edge too. */
+  @page :first {
+    margin-top: 0;
+  }
+
+  @media print {
+    body {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="top-band">
+    <div class="name">{{NAME}}</div>
+    <div class="contact">{{CONTACT_LINE}}</div>
+  </div>
+
+  <div class="page-content">
+    <div class="date-line">{{DATE_DISPLAY}}</div>
+    <div class="subject-line">{{SUBJECT_LINE}}</div>
+
+    {{GREETING_BLOCK}}
+    <p>{{OPENING}}</p>
+    <p>{{PROFILE_INTRO}}</p>
+
+    {{ACHIEVEMENTS_BLOCK}}
+
+    {{PROBLEMS_BLOCK}}
+    {{CLOSING_BLOCK}}
+    {{LANGUAGE_CLOSING_BLOCK}}
+
+    <div class="sign-off">{{SIGN_OFF}}</div>
+    {{SIGNATURE_IMAGE_BLOCK}}
+    {{SIGNATURE_BLOCK}}
+    {{FOOTNOTES_BLOCK}}
+  </div>
+</body>
+</html>

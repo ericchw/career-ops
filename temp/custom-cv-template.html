@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="{{LANG}}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{NAME}} — CV</title>
+<style>
+  /* ATS-safe typography: variable woff2 (Space Grotesk / DM Sans) widen glyph advances in
+     Chromium PDF output. Static system sans stack matches templates/cv-template.html. */
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-variant-ligatures: none;
+    font-feature-settings: "liga" 0, "clig" 0, "dlig" 0;
+  }
+
+  :root {
+    --font-sans: 'Liberation Sans', 'Helvetica Neue', Arial, 'DejaVu Sans', sans-serif;
+    --accent: #D85A30;
+    --accent-dark: #A84324;
+    --accent-light: #FFF0E8;
+    --accent-border: #F0C4AE;
+    --text: #1a1a1a;
+    --text-muted: #666666;
+    --text-secondary: #666666;
+    --text-tertiary: #999999;
+    --divider: #D8D8D8;
+    --contact-bg: #EBEBEB;
+    --border-tertiary: #E0E0E0;
+    --page-margin: 0.6in;
+  }
+
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  body {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    line-height: 1.5;
+    color: #1a1a2e;
+    background: #ffffff;
+    padding: 0;
+    margin: 0;
+    font-variant-ligatures: none;
+    font-feature-settings: "liga" 0, "clig" 0, "dlig" 0;
+  }
+
+  .page {
+    width: 100%;
+    max-width: {{PAGE_WIDTH}};
+    margin: 0 auto;
+    padding: 0 2px 0 0;
+  }
+
+  /* === HEADER (split: name left, grey contact panel right) ===
+   *
+   * CONTACT PANEL EDGE BLEED (user layer — survives career-ops updates)
+   *
+   * Design: grey .contact-panel touches the physical page TOP on page 1.
+   * Name column stays inset via .header-left { padding-top: var(--page-margin) }.
+   *
+   * CRITICAL — two parts must work together (agents: do not change one without the other):
+   *   1. generate-pdf.mjs → page.pdf({ preferCSSPageSize: true }) — NO Playwright margin
+   *      object; margins come from @page rules below.
+   *   2. @page :first { margin-top: 0 } — bleeds panel to top only.
+   *      Page 2+ keeps margin-top 0.6in via the default @page rule.
+   *
+   * DO NOT remove the right margin:
+   *   - Keep @page { margin-right: calc(0.6in + 2px) } on all pages (including :first).
+   *   - Never set margin-right: 0 on @page :first — user-tested; breaks layout.
+   *
+   * WRONG (leaves a white gap above grey panel):
+   *   - Playwright margin top: '0.6in' with preferCSSPageSize: false
+   *   - Removing @page :first or setting preferCSSPageSize: false
+   *   - Negative-margin hacks on .header (breaks layout; do not use)
+   *
+   * Regen: buildCvBaseHtml() → node generate-pdf.mjs — full steps in modes/pdf.md
+   */
+
+  .header { margin-bottom: 20px; }
+
+  .header-wrap {
+    display: flex;
+    align-items: stretch;
+    background: #ffffff;
+    border: none;
+    border-radius: 0;
+    overflow: hidden;
+  }
+
+  .header-left {
+    flex: 0 0 70%;
+    padding: var(--page-margin) 24px 18px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    justify-content: flex-start;
+  }
+
+  .header-name {
+    font-family: var(--font-sans);
+    font-size: 28px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1.1;
+  }
+
+  .name-first { color: var(--text); }
+  .name-last { color: var(--accent); }
+
+  .name-contact {
+    font-size: 12px;
+    color: var(--text-secondary);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 6px;
+    line-height: 1.45;
+  }
+
+  .name-contact-line { white-space: nowrap; }
+
+  .link-sep {
+    color: var(--text-tertiary);
+    font-size: 9px;
+  }
+
+  .contact-panel {
+    flex: 0 0 30%;
+    background: var(--contact-bg);
+    padding: 0 18px 22px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 4px;
+    position: relative;
+  }
+
+  .contact-link {
+    font-size: 12px;
+    color: #444;
+    line-height: 1.7;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .contact-icon {
+    width: 1em;
+    height: 1em;
+    object-fit: contain;
+    flex: 0 0 1em;
+  }
+
+  .header-accent {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--accent);
+  }
+
+  /* === SECTIONS === */
+  .section { margin-bottom: 16px; }
+
+  .section.projects-section {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  .section-title {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    border-bottom: 1.5px solid var(--divider);
+    padding-bottom: 4px;
+    margin-bottom: 10px;
+    line-height: 1.2;
+  }
+
+  .summary-text {
+    font-size: 12px;
+    line-height: 1.7;
+    color: #2f2f2f;
+  }
+
+  a { white-space: nowrap; }
+
+  /* === CORE COMPETENCIES === */
+  .competencies-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .competency-tag {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--accent-dark);
+    background: var(--accent-light);
+    padding: 1px 10px;
+    border-radius: 3px;
+    border: 1px solid var(--accent-border);
+  }
+
+  /* === WORK EXPERIENCE === */
+  .job { margin-bottom: 16px; }
+
+  .job-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+
+  .job-company {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent-dark);
+  }
+
+  .job-period {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  .job-role {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent-dark);
+    margin-bottom: 6px;
+  }
+
+  .job ul {
+    padding-left: 18px;
+    margin-top: 6px;
+  }
+
+  .job li {
+    font-size: 12px;
+    line-height: 1.55;
+    color: #333;
+    margin-bottom: 3px;
+  }
+
+  .job li strong { font-weight: 600; }
+
+  /* === PROJECTS === */
+  .project { margin-bottom: 10px; }
+
+  .project-title {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .project-badge {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--accent-dark);
+    background: var(--accent-light);
+    padding: 1px 6px;
+    border-radius: 2px;
+    border: 1px solid var(--accent-border);
+    margin-left: 6px;
+  }
+
+  .project-desc {
+    font-size: 12px;
+    color: #444;
+    margin-top: 3px;
+    line-height: 1.55;
+  }
+
+  .project-bullets {
+    padding-left: 18px;
+    margin: 3px 0 0;
+  }
+
+  .project-bullets li {
+    font-size: 12px;
+    color: #444;
+    line-height: 1.55;
+    margin-bottom: 2px;
+  }
+
+  .project-bullets li strong { font-weight: 600; }
+
+  .project-tech {
+    font-size: 11px;
+    color: #888;
+    margin-top: 3px;
+  }
+
+  .project-tech a.project-link {
+    color: #666;
+    text-decoration: none;
+  }
+
+  .project-tech a.project-link:hover {
+    text-decoration: underline;
+  }
+
+  /* === EDUCATION === */
+  .edu-item { margin-bottom: 10px; }
+
+  .edu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 3px;
+  }
+
+  .edu-degree {
+    font-weight: 700;
+    font-size: 12px;
+    color: var(--text);
+  }
+
+  .edu-year {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  .edu-school {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+  }
+
+  .edu-desc {
+    font-size: 11px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  /* === CERTIFICATIONS === */
+  .cert-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 5px;
+  }
+
+  .cert-title {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text);
+    flex: 1;
+    min-width: 0;
+  }
+
+  .cert-year {
+    font-size: 11px;
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  .cert-additional {
+    font-size: 11px;
+    color: var(--text);
+    line-height: 1.55;
+    margin-top: 4px;
+  }
+
+  /* === SKILLS === */
+  .skills-list { display: flex; flex-direction: column; gap: 5px; }
+
+  .skill-item {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.55;
+  }
+
+  .skill-category {
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  @page {
+    size: {{PAGE_SIZE}};
+    margin-top: var(--page-margin);
+    margin-right: calc(var(--page-margin) + 2px);
+    margin-bottom: var(--page-margin);
+    margin-left: var(--page-margin);
+  }
+
+  /* Page 1: grey contact panel bleeds to top only (requires preferCSSPageSize in generate-pdf.mjs). */
+  @page :first {
+    margin-top: 0;
+  }
+
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page { padding: 0 2px 0 0; }
+  }
+
+  .avoid-break, .job, .project, .edu-item, .cert-item {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* === RTL (Arabic) Support === */
+  html[lang="ar"] body {
+    direction: rtl;
+    text-align: right;
+    font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+  }
+
+  html[lang="ar"] .header-name,
+  html[lang="ar"] .section-title,
+  html[lang="ar"] .job-company,
+  html[lang="ar"] .project-title,
+  html[lang="ar"] .competency-tag,
+  html[lang="ar"] .skill-category {
+    font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+  }
+
+  html[lang="ar"] .job ul {
+    padding-right: 18px;
+    padding-left: 0;
+  }
+
+  html[lang="ar"] .project-badge {
+    margin-right: 6px;
+    margin-left: 0;
+  }
+
+  html[lang="ar"] .cert-year {
+    text-align: left;
+  }
+
+  /* === CJK (Japanese) font fallback === */
+  html[lang="ja"] body {
+    font-family: var(--font-sans), 'Hiragino Sans', 'Hiragino Kaku Gothic ProN',
+      'Yu Gothic', 'YuGothic', 'Noto Sans CJK JP', 'Noto Sans JP',
+      Meiryo, 'MS PGothic', sans-serif;
+  }
+
+  html[lang="ja"] .header-name,
+  html[lang="ja"] .section-title,
+  html[lang="ja"] .job-company,
+  html[lang="ja"] .project-title,
+  html[lang="ja"] .competency-tag,
+  html[lang="ja"] .skill-category {
+    font-family: var(--font-sans), 'Hiragino Sans', 'Hiragino Kaku Gothic ProN',
+      'Yu Gothic', 'YuGothic', 'Noto Sans CJK JP', 'Noto Sans JP',
+      Meiryo, 'MS PGothic', sans-serif;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header avoid-break">
+    <div class="header-wrap">
+      <div class="header-left">
+        <div class="header-name">
+          <span class="name-first">{{NAME_FIRST}}&nbsp;</span><span class="name-last">{{NAME_LAST}}</span>
+        </div>
+        <div class="name-contact">
+          <div class="name-contact-line">{{LOCATION}}</div>
+          <div class="name-contact-line">{{CONTACT_LINE}}</div>
+        </div>
+      </div>
+      <div class="contact-panel">
+        <a class="contact-link" href="{{LINKEDIN_URL}}"><img class="contact-icon" src="config/assets/logo-linkedin.png" alt="" aria-hidden="true">{{LINKEDIN_DISPLAY}}</a>
+        <a class="contact-link" href="{{PORTFOLIO_URL}}"><img class="contact-icon" src="config/assets/logo-github.png" alt="" aria-hidden="true">{{PORTFOLIO_DISPLAY}}</a>
+        <div class="header-accent"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section avoid-break">
+    <div class="section-title">{{SECTION_SUMMARY}}</div>
+    <div class="summary-text">{{SUMMARY_TEXT}}</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">{{SECTION_COMPETENCIES}}</div>
+    <div class="competencies-grid">
+{{COMPETENCIES}}
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">{{SECTION_EXPERIENCE}}</div>
+{{EXPERIENCE}}
+  </div>
+
+  <div class="section avoid-break projects-section">
+    <div class="section-title">{{SECTION_PROJECTS}}</div>
+{{PROJECTS}}
+  </div>
+
+  <div class="section avoid-break">
+    <div class="section-title">{{SECTION_EDUCATION}}</div>
+{{EDUCATION}}
+  </div>
+
+  <div class="section avoid-break">
+    <div class="section-title">{{SECTION_CERTIFICATIONS}}</div>
+{{CERTIFICATIONS}}
+  </div>
+
+  <div class="section avoid-break">
+    <div class="section-title">{{SECTION_SKILLS}}</div>
+    <div class="skills-list">
+{{SKILLS}}
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
